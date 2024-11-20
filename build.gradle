@@ -1,0 +1,96 @@
+plugins {
+    id "idea"
+    id "jacoco"
+    id "maven-publish"
+    id "org.jetbrains.kotlin.jvm" version "1.9.22"
+    id "org.jetbrains.kotlin.plugin.spring" version "1.9.22"
+    id "org.jlleitschuh.gradle.ktlint" version "12.1.0"
+    id "org.springframework.boot" version "3.3.3"
+    id "io.spring.dependency-management" version "1.1.6"
+}
+
+idea {
+    module {
+        downloadJavadoc = true
+        downloadSources = true
+    }
+}
+
+ext {
+    springBootVersion = "3.3.3"
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.boot:spring-boot-dependencies:$springBootVersion"
+    }
+}
+
+[compileKotlin, compileTestKotlin]*.kotlinOptions*.jvmTarget = "21"
+
+ktlint {
+    version.set("1.1.1")
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation "org.springframework.boot:spring-boot-starter"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+    implementation "org.jetbrains.kotlin:kotlin-reflect"
+
+    testImplementation "org.springframework.boot:spring-boot-starter-test"
+    testImplementation "org.springframework.boot:spring-boot-starter-web"
+    testImplementation "org.assertj:assertj-core"
+}
+
+test {
+    useJUnitPlatform()
+}
+
+jacocoTestReport {
+    reports {
+        xml.required = true
+        html.required = false
+    }
+}
+
+check.dependsOn jacocoTestReport
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from components.java
+            pom {
+                name = "feature-flags"
+                description = "Feature Flags for Java and Spring Boot"
+                licenses {
+                    license {
+                        name = "The MIT License"
+                        url = "https://opensource.org/license/mit"
+                    }
+                }
+                developers {
+                    developer {
+                        name = "Romanov Alex"
+                        email = "romanowalex@mail.ru"
+                    }
+                }
+                scm {
+                    url = "https://github.com/Romanow/feature-flags/"
+                }
+            }
+        }
+    }
+    repositories {
+        maven {
+            url = uri("https://maven.pkg.github.com/Romanow/feature-flags")
+            credentials {
+                username = System.getenv("GITHUB_USER")
+                password = System.getenv("GITHUB_TOKEN")
+            }
+        }
+    }
+}
