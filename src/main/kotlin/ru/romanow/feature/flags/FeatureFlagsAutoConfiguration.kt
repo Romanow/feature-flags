@@ -5,14 +5,12 @@ package ru.romanow.feature.flags
 
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.context.properties.EnableConfigurationProperties
-import org.springframework.context.annotation.Bean
-import ru.romanow.feature.flags.config.FeatureBeanPostProcessor
+import org.springframework.context.annotation.ComponentScan
+import org.springframework.scheduling.annotation.EnableScheduling
 import ru.romanow.feature.flags.properties.Features
 
+@EnableScheduling
 @AutoConfiguration
 @EnableConfigurationProperties(Features::class)
-class FeatureFlagsAutoConfiguration {
-
-    @Bean
-    fun featureBeanPostProcessor(features: Features) = FeatureBeanPostProcessor(features)
-}
+@ComponentScan(basePackages = ["ru.romanow.feature.flags"])
+class FeatureFlagsAutoConfiguration

@@ -1,5 +1,5 @@
 title: Feature Flags Spring Boot
-description: Реализация паттерна Feature Flags для Java и Spring Boot
+description: Feature Flags implementation for Java and Spring Boot
 author:
   name: Romanow
   email: romanowalex@mail.ru
@@ -7,8 +7,6 @@ author:
 show_downloads: false
 remote_theme: jekyll/minima
 header_pages: ['']
-exclude:
-  - report/*
 
 minima:
   skin: classic

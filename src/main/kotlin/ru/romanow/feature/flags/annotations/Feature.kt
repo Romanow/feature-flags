@@ -7,14 +7,5 @@ package ru.romanow.feature.flags.annotations
 @Retention(AnnotationRetention.RUNTIME)
 annotation class Feature(
     val value: String,
-    val default: String = "<empty>",
-    val group: Group = Group.DEFAULT
+    val default: String = "<empty>"
 )
-
-enum class Group {
-    DEFAULT,
-    RELEASE,
-    EXPERIMENTAL,
-    PERMISSION,
-    OPERATION
-}

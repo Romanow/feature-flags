@@ -1,0 +1,8 @@
+spring:
+  main:
+    allow-bean-definition-overriding: true
+
+features:
+  config:
+    location: ${FEATURES_CONFIG_LOCATION:/opt/features.yml}
+    reload-interval: ${FEATURES_RELOAD_INTERVAL:PT5S}

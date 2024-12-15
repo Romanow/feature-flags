@@ -10,19 +10,30 @@
 ```xml
 
 <dependency>
-    <groupId>ru.romanow.logging</groupId>
-    <artifactId>log-masking-lib</artifactId>
-    <version>${log-masking-lib.version}</version>
+    <groupId>ru.romanow</groupId>
+    <artifactId>feature-flags</artifactId>
+    <version>${feature-flags.version}</version>
 </dependency>
 ```
 
 ### Gradle
 
 ```groovy
-testImplementation "ru.romanow.logging:log-masking-lib:$logMaskingVersion"
+testImplementation "ru.romanow:feature-flags:$featureFlagsVersion"
 ```
 
 ## Реализация
 
-* Флаги по группам и именам.
-* Дефолтное значение.
+Классы, которые необходимо перезагружать при обновлении флагов:
+
+* Класс `Features` (`@ConfigurationProperties(prefix = "features")`) и beans, куда он autowired.
+* Beans, помеченные аннотациями `@ConditionOnFeatureEnabled`, `ConditionOnFeatureDisabled` и
+  `@DefaultFeatureImplementation`.
+* Классы, где есть `@Value("${features.*})`.
+
+Способы получения обновленного конфига:
+
+* Файл на host-машине:
+    * classpath (by default) – не контролируется;
+    * `/opt/features.yml` (контролируется переменной `features.config.location`).
+* Запросом к config-серверу.

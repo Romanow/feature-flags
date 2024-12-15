@@ -26,7 +26,7 @@ dependencyManagement {
     }
 }
 
-[compileKotlin, compileTestKotlin]*.kotlinOptions*.jvmTarget = "21"
+[compileKotlin, compileTestKotlin]*.kotlinOptions*.jvmTarget = "17"
 
 ktlint {
     version.set("1.1.1")
@@ -59,17 +59,21 @@ jacocoTestReport {
 
 check.dependsOn jacocoTestReport
 
+bootJar {
+    enabled = false
+}
+
 publishing {
     publications {
         maven(MavenPublication) {
             from components.java
             pom {
                 name = "feature-flags"
-                description = "Feature Flags for Java and Spring Boot"
+                description = "Feature Flags implementation for Java and Spring Boot"
                 licenses {
                     license {
-                        name = "The MIT License"
-                        url = "https://opensource.org/license/mit"
+                        name = "Apache License, Version 2.0"
+                        url = "https://opensource.org/license/apache-2-0"
                     }
                 }
                 developers {
