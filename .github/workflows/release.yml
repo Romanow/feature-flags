@@ -23,8 +23,10 @@ jobs:
       - name: Build
         run: ./gradlew publish
         env:
-          GITHUB_USER: ${{ secrets.GITHUB_USER }}
+          GITHUB_USER: ${{ github.actor }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create release
         uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true

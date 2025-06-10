@@ -4,6 +4,8 @@
 package ru.romanow.feature.flags.config
 
 import org.springframework.beans.factory.config.BeanPostProcessor
+import org.springframework.context.ApplicationContext
+import org.springframework.context.ApplicationContextAware
 import org.springframework.stereotype.Component
 import ru.romanow.feature.flags.annotations.ConditionOnFeatureEnabled
 import ru.romanow.feature.flags.annotations.DefaultFeatureImplementation
@@ -12,10 +14,9 @@ import ru.romanow.feature.flags.properties.Features
 import java.lang.reflect.Field
 
 @Component
-class FeatureBeanPostProcessor(
-    private val features: Features,
-    private val featureBeans: FeatureBeans
-) : BeanPostProcessor {
+class FeatureBeanPostProcessor(private val featureBeans: FeatureBeans) : BeanPostProcessor, ApplicationContextAware {
+    private lateinit var applicationContext: ApplicationContext
+
     override fun postProcessBeforeInitialization(bean: Any, beanName: String): Any {
         if (bean.javaClass.isAnnotationPresent(DefaultFeatureImplementation::class.java) ||
             bean.javaClass.isAnnotationPresent(ConditionOnFeatureEnabled::class.java)
@@ -25,6 +26,7 @@ class FeatureBeanPostProcessor(
             val fields = bean.javaClass.declaredFields.filter { it.isAnnotationPresent(Feature::class.java) }
             if (fields.isNotEmpty()) {
                 featureBeans[beanName] = bean
+                val features = applicationContext.getBean(Features::class.java)
                 for (field in fields) {
                     val annotation = field.getAnnotation(Feature::class.java)
                     field.isAccessible = true
@@ -43,6 +45,10 @@ class FeatureBeanPostProcessor(
             }
         }
         return bean
+    }
+
+    override fun setApplicationContext(applicationContext: ApplicationContext) {
+        this.applicationContext = applicationContext
     }
 
     private fun isBoolean(field: Field) = field.type.isAssignableFrom(Boolean::class.javaObjectType)

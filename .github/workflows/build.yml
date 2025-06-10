@@ -1,6 +1,14 @@
+---
 name: Build project
 on:
-  [ push ]
+  push:
+    branches:
+      - master
+    paths:
+      - ".github/**"
+      - "src/**"
+      - "build.gradle"
+      - "gradle.properties"
 jobs:
   build:
     name: Build

@@ -1,5 +1,8 @@
-[![Build project](https://github.com/Romanow/feature-flags/actions/workflows/build.yml/badge.svg?branch=master)](https://github.com/Romanow/feature-flags/actions/workflows/build.yml)
+[![CI](https://github.com/Romanow/feature-flags/actions/workflows/build.yml/badge.svg?branch=master)](https://github.com/Romanow/feature-flags/actions/workflows/build.yml)
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit)](https://github.com/pre-commit/pre-commit)
+[![Release](https://img.shields.io/github/v/release/Romanow/feature-flags?logo=github&sort=semver)](https://github.com/Romanow/feature-flags/releases/latest)
+[![Codecov](https://codecov.io/gh/Romanow/feature-flags/branch/master/graph/badge.svg?token=Cckw6pHLh7)](https://codecov.io/gh/Romanow/feature-flags)
+[![License](https://img.shields.io/github/license/Romanow/feature-flags)](https://github.com/Romanow/feature-flags/blob/master/LICENSE)
 
 # Feature Flags
 

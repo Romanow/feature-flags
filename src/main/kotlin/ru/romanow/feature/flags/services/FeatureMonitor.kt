@@ -39,14 +39,8 @@ class FeatureMonitor(
             logger.info("Properties changed, reloading...")
             environment.propertySources.addLast(PropertiesPropertySource("features", newProperties))
             val beanFactory = context.autowireCapableBeanFactory as DefaultSingletonBeanRegistry
-            for ((name, bean) in featureBeans) {
+            for (name in featureBeans.keys) {
                 beanFactory.destroySingleton(name)
-                val cls = if (bean::class.java.interfaces.isNotEmpty()) {
-                    bean::class.java.interfaces[0]
-                } else {
-                    bean::class.java
-                }
-                featureBeans[name] = context.getBean(cls)
             }
         }
     }
