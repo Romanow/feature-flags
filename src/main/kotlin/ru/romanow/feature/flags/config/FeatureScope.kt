@@ -3,36 +3,46 @@
  */
 package ru.romanow.feature.flags.config
 
-import org.springframework.aop.framework.AopProxyUtils
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.ObjectFactory
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory
 import org.springframework.beans.factory.config.Scope
+import org.springframework.context.ApplicationContext
+import org.springframework.core.env.Environment
 import ru.romanow.feature.flags.annotations.ConditionOnFeatureEnabled
 import ru.romanow.feature.flags.annotations.DefaultFeatureImplementation
-import ru.romanow.feature.flags.properties.Features
-import java.util.concurrent.ConcurrentHashMap
 
 class FeatureScope(
-    private val features: Features,
-    private val beanFactory: ConfigurableListableBeanFactory
+    private val beanFactory: ConfigurableListableBeanFactory,
+    private val applicationContext: ApplicationContext,
+    private val environment: Environment
 ) : Scope {
-    private val beans = ConcurrentHashMap<String, Any>()
+    private val logger = LoggerFactory.getLogger(FeatureScope::class.java)
+    private val beans = mutableMapOf<String, Pair<String, String?>>()
 
     override fun get(name: String, objectFactory: ObjectFactory<*>): Any {
         val definition = beanFactory.getBeanDefinition(name)
         val beanClass = Class.forName(definition.beanClassName)
-        var annotation = beanClass.getAnnotation(ConditionOnFeatureEnabled::class.java)
-            ?: beanClass.getAnnotation(DefaultFeatureImplementation::class.java)
-
-        val previousValue = featureState[feature]
-        if (previousValue != null && previousValue != currentValue) {
-            beans.remove(name)
+        val beanFeatureValue = beans[name]
+        if (beanFeatureValue == null) {
+            // Если beans пустой, значит это первый запрос и берем beanName, featureName, featureValue и кладем в map
+            val featureName = featureName(beanClass)
+            val featureValue = environment.getProperty("features.$featureName", String::class.java)
+            beans[name] = Pair(featureName, featureValue)
+        } else {
+            // Если в beans уже содержится bean, то проверяем текущее значение environment[featureName] == featureValue,
+            //  если оно не совпадает с тем, то надо обновить bean
+            val featureName = featureName(beanClass)
+            val previousFeatureValue = beans[name]?.second
+            val currentFeatureValue = environment.getProperty("features.$featureName", String::class.java)
+            if (previousFeatureValue != currentFeatureValue) {
+                logger.info(
+                    "Feature '$featureName' changed from '$previousFeatureValue' to " +
+                        "'$currentFeatureValue', must change implementation"
+                )
+            }
         }
-
-        return beans.computeIfAbsent(name) {
-            featureState[feature] = currentValue
-            objectFactory.`object`
-        }
+        return objectFactory.`object`
     }
 
     override fun remove(name: String): Any? {
@@ -41,5 +51,20 @@ class FeatureScope(
 
     override fun registerDestructionCallback(name: String, callback: Runnable) {}
     override fun resolveContextualObject(key: String): Any? = null
-    override fun getConversationId(): String = "feature"
+    override fun getConversationId(): String = FEATURE_SCOPE
+
+    private fun featureName(cls: Class<*>): String {
+        if (cls.isAnnotationPresent(ConditionOnFeatureEnabled::class.java)) {
+            return cls.getAnnotation(ConditionOnFeatureEnabled::class.java).feature
+        } else if (cls.isAnnotationPresent(DefaultFeatureImplementation::class.java)) {
+            return cls.getAnnotation(DefaultFeatureImplementation::class.java).feature
+        }
+        throw IllegalArgumentException(
+            "Class $cls must be annotated with @ConditionOnFeatureEnabled or @DefaultFeatureImplementation"
+        )
+    }
+
+    companion object {
+        const val FEATURE_SCOPE = "feature"
+    }
 }

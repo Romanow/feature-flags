@@ -9,10 +9,9 @@ import org.springframework.core.type.AnnotatedTypeMetadata
 
 class OnFeatureEnabledCondition : Condition {
     override fun matches(context: ConditionContext, metadata: AnnotatedTypeMetadata): Boolean {
-        val attributes = metadata.getAnnotationAttributes(ConditionOnFeatureEnabled::class.qualifiedName)
+        val attributes = metadata.getAnnotationAttributes(ConditionOnFeatureEnabled::class.qualifiedName!!)
         val featureName = attributes?.get("feature") as String? ?: return false
         val expected = attributes?.get("expected") as String? ?: return false
-        return context.environment
-            .getProperty("features.$featureName", String::class.java) == expected
+        return context.environment.getProperty("features.$featureName", String::class.java) == expected
     }
 }

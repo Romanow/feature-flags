@@ -6,11 +6,16 @@ package ru.romanow.feature.flags.config
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor
 import org.springframework.beans.factory.config.ConfigurableBeanFactory
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory
-import ru.romanow.feature.flags.properties.Features
+import org.springframework.context.ApplicationContext
+import org.springframework.core.env.Environment
+import ru.romanow.feature.flags.config.FeatureScope.Companion.FEATURE_SCOPE
 
-class FeatureBeanFactoryPostProcessor(private val features: Features) : BeanFactoryPostProcessor {
+class FeatureBeanFactoryPostProcessor(
+    private val environment: Environment,
+    private val applicationContext: ApplicationContext
+) : BeanFactoryPostProcessor {
     override fun postProcessBeanFactory(beanFactory: ConfigurableListableBeanFactory) {
-        val scope = FeatureScope(features, beanFactory)
-        (beanFactory as ConfigurableBeanFactory).registerScope("feature", scope)
+        val scope = FeatureScope(beanFactory, applicationContext, environment)
+        (beanFactory as ConfigurableBeanFactory).registerScope(FEATURE_SCOPE, scope)
     }
 }
