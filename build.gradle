@@ -18,6 +18,8 @@ idea {
 
 ext {
     springBootVersion = "3.3.3"
+    reflectionsVersion = "0.10.2"
+    mockkVersion = "1.14.2"
 }
 
 dependencyManagement {
@@ -40,7 +42,9 @@ dependencies {
     implementation "org.springframework.boot:spring-boot-starter"
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     implementation "org.jetbrains.kotlin:kotlin-reflect"
+    implementation "org.reflections:reflections:$reflectionsVersion"
 
+    testImplementation "io.mockk:mockk:${mockkVersion}"
     testImplementation "org.springframework.boot:spring-boot-starter-test"
     testImplementation "org.springframework.boot:spring-boot-starter-web"
     testImplementation "org.assertj:assertj-core"
