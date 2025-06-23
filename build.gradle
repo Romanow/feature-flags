@@ -17,7 +17,7 @@ idea {
 }
 
 ext {
-    springBootVersion = "3.3.3"
+    springBootVersion = "3.5.3"
     reflectionsVersion = "0.10.2"
     mockkVersion = "1.14.2"
 }
