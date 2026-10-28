@@ -19,11 +19,17 @@ jobs:
       - uses: actions/setup-java@v4
         with:
           distribution: "corretto"
-          java-version: "17"
+          java-version: "21"
           cache: "gradle"
 
       - name: Validate
         uses: pre-commit/action@v3.0.0
 
       - name: Build project
-        run: ./gradlew clean build jacocoTestReport
+        run: ./gradlew clean build
+
+      - name: Upload coverage to Codecov
+        if: ${{ !cancelled() }}
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}

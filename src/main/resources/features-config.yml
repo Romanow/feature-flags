@@ -1,0 +1,7 @@
+---
+features-config:
+  enabled: ${FEATURES_ENABLED:true}
+  location: ${FEATURES_CONFIG_LOCATION:/opt/features.yml}
+  reload-enabled: ${FEATURES_RELOAD_ENABLED:true}
+  reload-interval: ${FEATURES_RELOAD_INTERVAL:PT5S}
+  reload-init-delay: ${FEATURES_RELOAD_INTERVAL:PT5S}

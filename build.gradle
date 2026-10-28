@@ -1,12 +1,14 @@
 plugins {
+    id "java-library"
     id "idea"
     id "jacoco"
     id "maven-publish"
-    id "org.jetbrains.kotlin.jvm" version "1.9.22"
-    id "org.jetbrains.kotlin.plugin.spring" version "1.9.22"
+    id "org.jreleaser" version "1.19.0"
+    id "org.jetbrains.kotlin.jvm" version "2.2.10"
+    id "org.jetbrains.kotlin.plugin.spring" version "2.2.10"
+    id "dev.detekt" version "2.0.0-alpha.0"
     id "org.jlleitschuh.gradle.ktlint" version "12.1.0"
-    id "org.springframework.boot" version "3.3.3"
-    id "io.spring.dependency-management" version "1.1.6"
+    id "io.spring.dependency-management" version "1.1.7"
 }
 
 idea {
@@ -16,11 +18,17 @@ idea {
     }
 }
 
+java {
+    withJavadocJar()
+    withSourcesJar()
+}
+
 ext {
-    springBootVersion = "3.3.3"
-    reflectionsVersion = "0.10.2"
+    springBootVersion = "3.5.16"
     mockkVersion = "1.14.2"
 }
+
+ext["kotlin.version"] = "2.2.10"
 
 dependencyManagement {
     imports {
@@ -28,10 +36,19 @@ dependencyManagement {
     }
 }
 
-[compileKotlin, compileTestKotlin]*.kotlinOptions*.jvmTarget = "17"
+kotlin {
+    jvmToolchain(21)
+}
 
 ktlint {
-    version.set("1.1.1")
+    version.set("1.5.0")
+}
+
+detekt {
+    toolVersion = "2.0.0-alpha.0"
+    config.setFrom(files("$rootDir/detekt.yml"))
+    buildUponDefaultConfig = true
+    basePath = rootDir
 }
 
 repositories {
@@ -39,41 +56,51 @@ repositories {
 }
 
 dependencies {
-    implementation "org.springframework.boot:spring-boot-starter"
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+    api "org.springframework.boot:spring-boot-starter"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib"
     implementation "org.jetbrains.kotlin:kotlin-reflect"
-    implementation "org.reflections:reflections:$reflectionsVersion"
 
     testImplementation "io.mockk:mockk:${mockkVersion}"
     testImplementation "org.springframework.boot:spring-boot-starter-test"
-    testImplementation "org.springframework.boot:spring-boot-starter-web"
     testImplementation "org.assertj:assertj-core"
+
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher"
 }
 
-test {
+tasks.withType(Test).configureEach {
     useJUnitPlatform()
 }
 
-jacocoTestReport {
+tasks.named("jacocoTestReport") {
+    dependsOn tasks.named("test")
     reports {
         xml.required = true
-        html.required = false
+        html.required = true
     }
 }
 
-check.dependsOn jacocoTestReport
-
-bootJar {
-    enabled = false
+tasks.named("check") {
+    dependsOn tasks.named("detektMain")
+    dependsOn tasks.named("detektTest")
+    dependsOn tasks.named("jacocoTestReport")
 }
 
 publishing {
     publications {
         maven(MavenPublication) {
             from components.java
+            versionMapping {
+                usage("java-api") {
+                    fromResolutionOf("runtimeClasspath")
+                }
+                usage("java-runtime") {
+                    fromResolutionResult()
+                }
+            }
             pom {
                 name = "feature-flags"
                 description = "Feature Flags implementation for Java and Spring Boot"
+                url = "https://github.com/Romanow/feature-flags/"
                 licenses {
                     license {
                         name = "Apache License, Version 2.0"
@@ -82,22 +109,40 @@ publishing {
                 }
                 developers {
                     developer {
-                        name = "Romanov Alex"
-                        email = "romanowalex@mail.ru"
+                        id = "Romanow"
+                        name = "Romanov Alexey"
+                        email = "romanow.tech@gmail.com"
                     }
                 }
                 scm {
                     url = "https://github.com/Romanow/feature-flags/"
+                    connection = "scm:git:https://github.com/Romanow/feature-flags.git"
+                    developerConnection = "scm:git:ssh://github.com/Romanow/feature-flags.git"
                 }
             }
         }
     }
     repositories {
         maven {
-            url = uri("https://maven.pkg.github.com/Romanow/feature-flags")
-            credentials {
-                username = System.getenv("GITHUB_USER")
-                password = System.getenv("GITHUB_TOKEN")
+            name = "staging"
+            url = layout.buildDirectory.dir("staging-deploy")
+        }
+    }
+}
+
+jreleaser {
+    signing {
+        active = "ALWAYS"
+        armored = true
+    }
+    deploy {
+        maven {
+            mavenCentral {
+                sonatype {
+                    active = "ALWAYS"
+                    url = "https://central.sonatype.com/api/v1/publisher"
+                    stagingRepository("build/staging-deploy")
+                }
             }
         }
     }

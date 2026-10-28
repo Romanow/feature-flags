@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Romanov Alexey, 2025
+ * Copyright (c) Romanov Alexey, 2026
  */
 package ru.romanow.feature.flags.annotations
 
@@ -7,5 +7,5 @@ package ru.romanow.feature.flags.annotations
 @Retention(AnnotationRetention.RUNTIME)
 annotation class Feature(
     val value: String,
-    val default: String = "<empty>"
+    val defaultValue: String = "<empty>"
 )
